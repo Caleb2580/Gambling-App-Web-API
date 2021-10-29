@@ -185,7 +185,19 @@ def crash_cashout(request):
         return JsonResponse({'success': False, 'error': 'did not bet'})
 
 
-
+@csrf_exempt
+def deposit(request):
+    if request.method == 'GET':
+        return JsonResponse({'error': 'method not allowed'})
+    else:
+        req = dict(request.POST)
+        try:
+            player = Players.objects.get(name='player_list').player_set.get(computer_name=req['computer_name'][0])
+            player.balance += round(float(req['amount'][0]), 2)
+            player.save()
+            return JsonResponse({'success': True})
+        except:
+            return JsonResponse({'error': 'method not allowed'})
 
 
 
