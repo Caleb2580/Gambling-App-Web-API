@@ -146,7 +146,7 @@ def crash_bet(request):
                             comp_name = ent['fields']['computer_name']
                             if comp_name == computer_name:
                                 return JsonResponse({'success': False, 'error': 'already bet'})
-                        crash_model.crashplayer_set.create(bet=float(req['bet'][0]), cashout=2.0, player_name=entry['fields']['player_name'], computer_name=req['computer_name'][0])
+                        crash_model.crashplayer_set.create(bet=float(req['bet'][0]), cashout=0.0, player_name=entry['fields']['player_name'], computer_name=req['computer_name'][0])
                         # print('set', crash_model.crashplayer_set.all())
                         player = Players.objects.get(name='player_list').player_set.get(computer_name=computer_name)
                         if player.balance >= float(req['bet'][0]):
@@ -198,6 +198,23 @@ def deposit(request):
             return JsonResponse({'success': True})
         except:
             return JsonResponse({'error': 'method not allowed'})
+
+
+@csrf_exempt
+def crash_players(request):
+    if request.method == 'GET':
+        end_string = ''
+        crash_model = Crash.objects.get(id=1)
+        crash_players_pre_serialize = crash_model.crashplayer_set.filter()
+        crash_players_raw = json.loads(serializers.serialize('json', crash_players_pre_serialize))
+        for ent in crash_players_raw:
+            if ent['fields']['cashout'] > 0:
+                end_string += str(ent['fields']['player_name']) + ' ' + str(ent['fields']['cashout']) + 'x $' + str(round(ent['fields']['bet'] * ent['fields']['cashout'], 2)) + '\n\n'
+            else:
+                end_string += str(ent['fields']['player_name']) + '  $' + str(ent['fields']['bet']) + '\n\n'
+        return JsonResponse({'success': True, 'label': end_string})
+    else:
+        return JsonResponse({'error': 'method not allowed'})
 
 
 
